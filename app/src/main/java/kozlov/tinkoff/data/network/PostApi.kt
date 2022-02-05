@@ -1,27 +1,31 @@
 package kozlov.tinkoff.data.network
 
-import kozlov.tinkoff.data.network.pojo.PostDTO
+import kozlov.tinkoff.data.network.pojo.PostDto
+import kozlov.tinkoff.data.network.pojo.Result
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface PostApi {
 
     @GET("/random")
-    fun getRandomPost(
-        @Query(QUERY_PARAM_JSON) json: String = JSON
-    ): PostDTO
+    suspend fun getRandomPost(
+          @Query(QUERY_PARAM_JSON) json: String = JSON
+    ): Result
 
-    @GET("/latest/0")
-    fun getLatestPosts(
+    @GET("latest/{id}")
+    suspend fun getLatestPosts(
+        @Path("id") id: Int,
         @Query(QUERY_PARAM_JSON) json: String = JSON,
         @Query(QUERY_PARAM_PAGE_SIZE) pageSize: String = PAGE_SIZE,
-    ): PostDTO
+    ): Result
 
-    @GET("/top/0")
-    fun getTopPosts(
+    @GET("top/{id}")
+    suspend fun getTopPosts(
+        @Path("id") id: Int,
         @Query(QUERY_PARAM_JSON) json: String = JSON,
         @Query(QUERY_PARAM_PAGE_SIZE) pageSize: String = PAGE_SIZE,
-        ): PostDTO
+    ): PostDto
 
     companion object {
         private const val QUERY_PARAM_JSON = "json"
@@ -30,6 +34,8 @@ interface PostApi {
 
         private const val JSON = "true"
         private const val PAGE_SIZE = "20"
+        private const val ID = "0"
+
     }
 
 }
