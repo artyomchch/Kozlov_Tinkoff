@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Kozlov</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="post">Post</string>
+    <string name="saved">Saved</string>
+    <string name="developers_life">Developers Life</string>
+    <string name="latest">Latest</string>
+    <string name="best">Best</string>
+    <string name="hot">Hot</string>
+    <string name="image_desc">Funny image</string>
+    <string name="something_text">Something text</string>
+</resources>
