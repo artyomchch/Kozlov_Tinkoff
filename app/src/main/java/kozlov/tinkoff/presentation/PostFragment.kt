@@ -49,6 +49,7 @@ class PostFragment : Fragment() {
     ): View {
         _binding = FragmentPostBinding.inflate(inflater, container, false)
 
+        showButtonState()
         showRandomPost()
         setupTabLayout()
         setupClickListenerNextButton()
@@ -57,6 +58,14 @@ class PostFragment : Fragment() {
         setupClickListenerReplayButton()
 
         return binding.root
+    }
+
+    private fun showButtonState() {
+        with(binding.replayButton){
+            visibility = if (viewModel.positionRandomItem == 0) View.INVISIBLE else View.VISIBLE
+        }
+
+
     }
 
 
@@ -83,7 +92,7 @@ class PostFragment : Fragment() {
 
                 when (category) {
                     0 -> {
-                       logicForRandomCategory()
+                        logicForRandomCategory()
                     }
 
                 }
@@ -93,9 +102,10 @@ class PostFragment : Fragment() {
     }
 
     private fun setupClickListenerReplayButton() {
-        binding.replayButton.setOnClickListener {
-            viewModel.categoryState.observe(viewLifecycleOwner) {
-                when (it) {
+        viewModel.categoryState.observe(viewLifecycleOwner) { category ->
+            binding.replayButton.setOnClickListener {
+
+                when (category) {
                     0 -> {
                         viewModel.positionRandomItem--
                         Log.d("position", "${viewModel.positionRandomItem}")
@@ -134,8 +144,8 @@ class PostFragment : Fragment() {
         })
     }
 
-    private fun logicForRandomCategory(){
-        with(viewModel){
+    private fun logicForRandomCategory() {
+        with(viewModel) {
             if (positionRandomItem == finishPositionRandom) {
                 positionRandomItem++
                 Log.d("position", "$positionRandomItem")
@@ -172,6 +182,7 @@ class PostFragment : Fragment() {
                 .error(R.drawable.ic_broken_image)
                 .into(binding.sourceInclude.imagePost)
             binding.sourceInclude.description.text = it[viewModel.positionRandomItem].description
+
         }
     }
 
