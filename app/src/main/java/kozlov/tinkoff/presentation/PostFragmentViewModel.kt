@@ -28,9 +28,16 @@ class PostFragmentViewModel @Inject constructor(
         get() = _randomItemList
 
 
+    var positionLatestItem = 0
+    var finishPositionLatest: Int = 19
+    var pageLatest = 0
+
     private val _latestItem = MutableLiveData<List<PostItem>>()
     val latestItem: LiveData<List<PostItem>>
         get() = _latestItem
+
+    var positionTopItem = 0
+    var finishPositionTop: Int = 0
 
     private val _topItem = MutableLiveData<List<PostItem>>()
     val topItem: LiveData<List<PostItem>>
@@ -48,20 +55,16 @@ class PostFragmentViewModel @Inject constructor(
     init {
 
         getRandomPost()
+        getLatestPosts(20)
         _categoryState.value = 0
     }
 
     fun getRandomPost() {
         _loadingState.value = true
         viewModelScope.launch {
-
             _randomItemList.value = getPostItemRandomUseCase.invoke()
-            Log.d("", "getRandomPost: ${_randomItemList.value}")
         }
-
     }
-
-
 
 
 

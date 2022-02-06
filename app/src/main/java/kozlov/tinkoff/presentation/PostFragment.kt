@@ -64,8 +64,6 @@ class PostFragment : Fragment() {
         with(binding.replayButton){
             visibility = if (viewModel.positionRandomItem == 0) View.INVISIBLE else View.VISIBLE
         }
-
-
     }
 
 
@@ -94,10 +92,11 @@ class PostFragment : Fragment() {
                     0 -> {
                         logicForRandomCategory()
                     }
-
+                    1 -> {
+                        logicForLatestCategory()
+                    }
                 }
             }
-
         }
     }
 
@@ -107,10 +106,10 @@ class PostFragment : Fragment() {
 
                 when (category) {
                     0 -> {
-                        viewModel.positionRandomItem--
-                        Log.d("position", "${viewModel.positionRandomItem}")
-                        showRandomPost()
-                        if (viewModel.positionRandomItem == 0) binding.replayButton.visibility = View.INVISIBLE
+                        backLogicForRandomCategory()
+                    }
+                    1 -> {
+                        backLogicForLatestCategory()
                     }
                 }
             }
@@ -124,11 +123,9 @@ class PostFragment : Fragment() {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 tab?.let {
                     viewModel.setPositionCategory(it.position)
-
-                    when (it.position) {
-                        // 0 -> showRandomPost()
-//                        1 -> showCategoryPost(viewModel.latestItem)
-//                        2 -> showCategoryPost(viewModel.topItem)
+                    when(tab.position){
+                        0 -> showRandomPost()
+                        1 -> showLatestPost()
                     }
                 }
             }
@@ -157,6 +154,66 @@ class PostFragment : Fragment() {
                 showRandomPost()
             }
             if (positionRandomItem > 0) binding.replayButton.visibility = View.VISIBLE
+        }
+    }
+
+    private fun logicForLatestCategory() {
+        with(viewModel) {
+            if (positionLatestItem == finishPositionLatest) {
+                positionLatestItem++
+                Log.d("position", "$positionLatestItem")
+                getLatestPosts(pageLatest)
+                pageLatest++
+                finishPositionLatest += 20
+            } else {
+                positionLatestItem++
+                Log.d("position", "$positionLatestItem")
+                showLatestPost()
+            }
+            if (positionLatestItem > 0) binding.replayButton.visibility = View.VISIBLE
+        }
+    }
+
+    private fun backLogicForLatestCategory(){
+        with(viewModel){
+            positionLatestItem--
+            Log.d("position", "$positionLatestItem")
+            showLatestPost()
+            if (positionLatestItem == 0) binding.replayButton.visibility = View.INVISIBLE
+        }
+    }
+
+    private fun backLogicForRandomCategory(){
+        with(viewModel){
+            positionRandomItem--
+            Log.d("position", "$positionRandomItem")
+            showRandomPost()
+            if (positionRandomItem == 0) binding.replayButton.visibility = View.INVISIBLE
+        }
+    }
+
+    private fun showLatestPost(){
+        viewModel.latestItem.observe(viewLifecycleOwner) {
+            Glide.with(binding.root)
+                .asGif()
+                .listener(object : RequestListener<GifDrawable> {
+                    override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<GifDrawable>?, isFirstResource: Boolean): Boolean {
+                        binding.progressBar.visibility = View.INVISIBLE
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: GifDrawable?, model: Any?, target: Target<GifDrawable>?, dataSource: DataSource?, isFirstResource: Boolean
+                    ): Boolean {
+                        binding.progressBar.visibility = View.INVISIBLE
+                        return false
+                    }
+                })
+                .load(it[viewModel.positionLatestItem].image)
+                .error(R.drawable.ic_broken_image)
+                .into(binding.sourceInclude.imagePost)
+            binding.sourceInclude.description.text = it[viewModel.positionLatestItem].description
+
         }
     }
 
