@@ -61,8 +61,18 @@ class PostFragment : Fragment() {
     }
 
     private fun showButtonState() {
-        with(binding.replayButton){
+        with(binding.replayButton) {
             visibility = if (viewModel.positionRandomItem == 0) View.INVISIBLE else View.VISIBLE
+        }
+    }
+
+    private fun showCategoryButtonState(category: Int) {
+        with(binding.replayButton) {
+            when (category) {
+                0 -> visibility = if (viewModel.positionRandomItem == 0) View.INVISIBLE else View.VISIBLE
+                1 -> visibility = if (viewModel.positionLatestItem == 0) View.INVISIBLE else View.VISIBLE
+                2 -> visibility = if (viewModel.positionTopItem == 0) View.INVISIBLE else View.VISIBLE
+            }
         }
     }
 
@@ -87,14 +97,10 @@ class PostFragment : Fragment() {
     private fun setupClickListenerNextButton() {
         viewModel.categoryState.observe(viewLifecycleOwner) { category ->
             binding.nextButton.setOnClickListener {
-
                 when (category) {
-                    0 -> {
-                        logicForRandomCategory()
-                    }
-                    1 -> {
-                        logicForLatestCategory()
-                    }
+                    0 -> logicForRandomCategory()
+                    1 -> logicForLatestCategory()
+                    2 -> logicForTopCategory()
                 }
             }
         }
@@ -105,17 +111,14 @@ class PostFragment : Fragment() {
             binding.replayButton.setOnClickListener {
 
                 when (category) {
-                    0 -> {
-                        backLogicForRandomCategory()
-                    }
-                    1 -> {
-                        backLogicForLatestCategory()
-                    }
+                    0 -> backLogicForRandomCategory()
+                    1 -> backLogicForLatestCategory()
+                    2 -> backLogicForTopCategory()
                 }
+
             }
         }
     }
-
 
     private fun setupTabLayout() {
 
@@ -123,21 +126,17 @@ class PostFragment : Fragment() {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 tab?.let {
                     viewModel.setPositionCategory(it.position)
-                    when(tab.position){
+                    when (tab.position) {
                         0 -> showRandomPost()
                         1 -> showLatestPost()
+                        2 -> showTopPost()
                     }
+                    showCategoryButtonState(tab.position)
                 }
             }
 
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
-
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-
-            }
-
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
     }
 
@@ -145,12 +144,12 @@ class PostFragment : Fragment() {
         with(viewModel) {
             if (positionRandomItem == finishPositionRandom) {
                 positionRandomItem++
-                Log.d("position", "$positionRandomItem")
+                Log.d("position random post", "$positionRandomItem")
                 getRandomPost()
                 finishPositionRandom = positionRandomItem
             } else {
                 positionRandomItem++
-                Log.d("position", "$positionRandomItem")
+                Log.d("position random post", "$positionRandomItem")
                 showRandomPost()
             }
             if (positionRandomItem > 0) binding.replayButton.visibility = View.VISIBLE
@@ -161,21 +160,47 @@ class PostFragment : Fragment() {
         with(viewModel) {
             if (positionLatestItem == finishPositionLatest) {
                 positionLatestItem++
-                Log.d("position", "$positionLatestItem")
+                Log.d("position latest post", "$positionLatestItem")
                 getLatestPosts(pageLatest)
                 pageLatest++
                 finishPositionLatest += 20
             } else {
                 positionLatestItem++
-                Log.d("position", "$positionLatestItem")
+                Log.d("position latest post", "$positionLatestItem")
                 showLatestPost()
             }
             if (positionLatestItem > 0) binding.replayButton.visibility = View.VISIBLE
         }
     }
 
-    private fun backLogicForLatestCategory(){
-        with(viewModel){
+    private fun logicForTopCategory() {
+        with(viewModel) {
+            if (positionTopItem == finishPositionTop) {
+                positionTopItem++
+                Log.d("position top post", "$positionTopItem")
+                getTopPosts(pageTop)
+                pageTop++
+                finishPositionTop += 20
+            } else {
+                positionTopItem++
+                Log.d("position top post", "$positionTopItem")
+                showTopPost()
+            }
+            if (positionTopItem > 0) binding.replayButton.visibility = View.VISIBLE
+        }
+    }
+
+    private fun backLogicForTopCategory() {
+        with(viewModel) {
+            positionTopItem--
+            Log.d("position", "$positionTopItem")
+            showTopPost()
+            if (positionTopItem == 0) binding.replayButton.visibility = View.INVISIBLE
+        }
+    }
+
+    private fun backLogicForLatestCategory() {
+        with(viewModel) {
             positionLatestItem--
             Log.d("position", "$positionLatestItem")
             showLatestPost()
@@ -183,8 +208,8 @@ class PostFragment : Fragment() {
         }
     }
 
-    private fun backLogicForRandomCategory(){
-        with(viewModel){
+    private fun backLogicForRandomCategory() {
+        with(viewModel) {
             positionRandomItem--
             Log.d("position", "$positionRandomItem")
             showRandomPost()
@@ -192,7 +217,7 @@ class PostFragment : Fragment() {
         }
     }
 
-    private fun showLatestPost(){
+    private fun showLatestPost() {
         viewModel.latestItem.observe(viewLifecycleOwner) {
             Glide.with(binding.root)
                 .asGif()
@@ -217,6 +242,29 @@ class PostFragment : Fragment() {
         }
     }
 
+    private fun showTopPost() {
+        viewModel.topItem.observe(viewLifecycleOwner) {
+            Glide.with(binding.root)
+                .asGif()
+                .listener(object : RequestListener<GifDrawable> {
+                    override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<GifDrawable>?, isFirstResource: Boolean): Boolean {
+                        binding.progressBar.visibility = View.INVISIBLE
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: GifDrawable?, model: Any?, target: Target<GifDrawable>?, dataSource: DataSource?, isFirstResource: Boolean
+                    ): Boolean {
+                        binding.progressBar.visibility = View.INVISIBLE
+                        return false
+                    }
+                })
+                .load(it[viewModel.positionTopItem].image)
+                .error(R.drawable.ic_broken_image)
+                .into(binding.sourceInclude.imagePost)
+            binding.sourceInclude.description.text = it[viewModel.positionTopItem].description
+        }
+    }
 
     private fun showRandomPost() {
         viewModel.randomItemList.observe(viewLifecycleOwner) {
@@ -239,15 +287,11 @@ class PostFragment : Fragment() {
                 .error(R.drawable.ic_broken_image)
                 .into(binding.sourceInclude.imagePost)
             binding.sourceInclude.description.text = it[viewModel.positionRandomItem].description
-
         }
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-
-
 }

@@ -1,6 +1,5 @@
 package kozlov.tinkoff.presentation
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -19,7 +18,6 @@ class PostFragmentViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-
     var positionRandomItem = 0
     var finishPositionRandom: Int = 0
 
@@ -29,7 +27,7 @@ class PostFragmentViewModel @Inject constructor(
 
 
     var positionLatestItem = 0
-    var finishPositionLatest: Int = 19
+    var finishPositionLatest = 19
     var pageLatest = 0
 
     private val _latestItem = MutableLiveData<List<PostItem>>()
@@ -37,7 +35,8 @@ class PostFragmentViewModel @Inject constructor(
         get() = _latestItem
 
     var positionTopItem = 0
-    var finishPositionTop: Int = 0
+    var finishPositionTop = 19
+    var pageTop = 0
 
     private val _topItem = MutableLiveData<List<PostItem>>()
     val topItem: LiveData<List<PostItem>>
@@ -55,7 +54,8 @@ class PostFragmentViewModel @Inject constructor(
     init {
 
         getRandomPost()
-        getLatestPosts(20)
+        getLatestPosts(0)
+        getTopPosts(0)
         _categoryState.value = 0
     }
 
@@ -65,8 +65,6 @@ class PostFragmentViewModel @Inject constructor(
             _randomItemList.value = getPostItemRandomUseCase.invoke()
         }
     }
-
-
 
     fun getLatestPosts(page: Int) {
         _loadingState.value = true
