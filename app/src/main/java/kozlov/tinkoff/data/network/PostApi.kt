@@ -18,7 +18,7 @@ interface PostApi {
         @Path("id") id: Int,
         @Query(QUERY_PARAM_JSON) json: String = JSON,
         @Query(QUERY_PARAM_PAGE_SIZE) pageSize: String = PAGE_SIZE,
-    ): Result
+    ): PostDto
 
     @GET("top/{id}")
     suspend fun getTopPosts(

@@ -2,20 +2,22 @@ package kozlov.tinkoff.presentation
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.resource.gif.GifDrawable
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
+import com.google.android.material.tabs.TabLayout
 import kozlov.tinkoff.R
-import kozlov.tinkoff.data.repository.PostRepositoryImpl
 import kozlov.tinkoff.databinding.FragmentPostBinding
-import kozlov.tinkoff.databinding.FragmentSavedBinding
-import kozlov.tinkoff.domain.repository.PostRepository
 import kozlov.tinkoff.utils.App
 import javax.inject.Inject
 
@@ -38,7 +40,7 @@ class PostFragment : Fragment() {
     }
 
     override fun onAttach(context: Context) {
-        component
+        component.inject(this)
         super.onAttach(context)
     }
 
@@ -47,15 +49,85 @@ class PostFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentPostBinding.inflate(inflater, container, false)
-        val a = PostRepositoryImpl()
-        CoroutineScope(Dispatchers.IO).launch {
-          //  a.getRandomPost()
-          //  a.getLatestPost(1)
-            a.getTopPost(1)
-        }
 
+        showPost()
+        setupTabLayout()
+        setupClickListenerNextButton()
+        showLoadingState()
 
         return binding.root
+    }
+
+    private fun showLoadingState() {
+        viewModel.loadingState.observe(viewLifecycleOwner){
+            with(binding.progressBar){
+                visibility = when (it){
+                    true -> View.VISIBLE
+                    false -> View.INVISIBLE
+                }
+            }
+        }
+    }
+
+    private fun setupClickListenerNextButton() {
+        binding.nextButton.setOnClickListener {
+            viewModel.getRandomPost()
+        }
+    }
+
+
+    private fun setupTabLayout() {
+        binding.tabCategories.addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener{
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+
+                tab?.let {
+                    when (it.position){
+                        0 -> showPost()
+                        1 -> viewModel.getLatestPosts(1)
+                    }
+                    Log.d("Tab", "onTabSelected: ${tab.position}")
+                }
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {
+
+            }
+
+            override fun onTabReselected(tab: TabLayout.Tab?) {
+
+            }
+
+        })
+    }
+
+
+    private fun showPost() {
+        viewModel.randomItem.observe(viewLifecycleOwner) {
+            Glide.with(binding.root)
+                .asGif()
+                .listener(object: RequestListener<GifDrawable>{
+                    override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<GifDrawable>?, isFirstResource: Boolean): Boolean {
+                        binding.progressBar.visibility = View.INVISIBLE
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: GifDrawable?, model: Any?, target: Target<GifDrawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                        binding.progressBar.visibility = View.INVISIBLE
+                        return false
+                    }
+                })
+                .load(it.image)
+                .error(R.drawable.ic_broken_image)
+                .into(binding.sourceInclude.imagePost)
+            binding.sourceInclude.description.text = it.description
+        }
+    }
+
+    private fun showLatestPost() {
+        viewModel.latestItem.observe(viewLifecycleOwner) {
+
+        }
     }
 
     override fun onDestroyView() {

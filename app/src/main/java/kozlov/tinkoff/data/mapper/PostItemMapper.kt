@@ -6,13 +6,15 @@ import javax.inject.Inject
 
 class PostItemMapper @Inject constructor() {
 
-    private fun mapNetworkModelToEntityPost(result: Result) = PostItem(
+    fun mapNetworkModelToEntityPost(result: Result) = PostItem(
         image = result.gifURL,
         description = result.description
     )
 
-    fun mapListNetworkModelToListEntityNews(list: List<Result>) =
+    fun mapListNetworkModelToListEntityPost(list: List<Result>) =
         list.map {
             mapNetworkModelToEntityPost(it)
         }
+
+
 }

@@ -14,7 +14,7 @@
         android:layout_height="match_parent">
 
         <ImageView
-            android:id="@+id/image_news"
+            android:id="@+id/image_post"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:contentDescription="@string/image_desc"
@@ -24,7 +24,7 @@
 
 
         <TextView
-            android:id="@+id/published_at"
+            android:id="@+id/description"
             android:layout_width="match_parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

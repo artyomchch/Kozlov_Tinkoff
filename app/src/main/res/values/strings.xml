@@ -10,4 +10,6 @@
     <string name="hot">Hot</string>
     <string name="image_desc">Funny image</string>
     <string name="something_text">Something text</string>
+    <string name="top">Top</string>
+    <string name="random">Random</string>
 </resources>
