@@ -14,6 +14,7 @@ class PostRepositoryImpl @Inject constructor(
 
 ) : PostRepository {
 
+    private var list = listOf<PostItem>()
 
     override suspend fun getLatestPost(page: Int): List<PostItem> {
         Log.d("network LATEST", RetrofitInstance.api.getLatestPosts(id = page).toString())
@@ -26,8 +27,9 @@ class PostRepositoryImpl @Inject constructor(
         return mapper.mapListNetworkModelToListEntityPost(retrofit.getTopPosts(id = page).result)
     }
 
-    override suspend fun getRandomPost(): PostItem {
+    override suspend fun getRandomPost(): List<PostItem>{
         Log.d("network RAND", RetrofitInstance.api.getRandomPost().toString())
-        return mapper.mapNetworkModelToEntityPost(retrofit.getRandomPost())
+        list = list.plus(mapper.mapNetworkModelToEntityPost(retrofit.getRandomPost()))
+        return list
     }
 }

@@ -8,5 +8,5 @@ interface PostRepository {
 
     suspend fun getTopPost(page: Int): List<PostItem>
 
-    suspend fun getRandomPost(): PostItem
+    suspend fun getRandomPost(): List<PostItem>
 }

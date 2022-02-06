@@ -1,5 +1,6 @@
 package kozlov.tinkoff.presentation
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,12 +16,17 @@ class PostFragmentViewModel @Inject constructor(
     private val getPostItemLatestUseCase: GetPostItemLatestUseCase,
     private val getPostItemRandomUseCase: GetPostItemRandomUseCase,
     private val getPostItemTopUseCase: GetPostItemTopUseCase
-): ViewModel() {
+) : ViewModel() {
 
 
-    private val _randomItem = MutableLiveData<PostItem>()
-    val randomItem: LiveData<PostItem>
-        get() = _randomItem
+
+    var positionRandomItem = 0
+    var finishPositionRandom: Int = 0
+
+    private val _randomItemList = MutableLiveData<List<PostItem>>()
+    val randomItemList: LiveData<List<PostItem>>
+        get() = _randomItemList
+
 
     private val _latestItem = MutableLiveData<List<PostItem>>()
     val latestItem: LiveData<List<PostItem>>
@@ -34,29 +40,45 @@ class PostFragmentViewModel @Inject constructor(
     val loadingState: LiveData<Boolean>
         get() = _loadingState
 
+    private val _categoryState = MutableLiveData<Int>()
+    val categoryState: LiveData<Int>
+        get() = _categoryState
+
+
     init {
+
         getRandomPost()
+        _categoryState.value = 0
     }
 
     fun getRandomPost() {
         _loadingState.value = true
         viewModelScope.launch {
-            _randomItem.value = getPostItemRandomUseCase.invoke()
+
+            _randomItemList.value = getPostItemRandomUseCase.invoke()
+            Log.d("", "getRandomPost: ${_randomItemList.value}")
         }
-       // _loadingState.value = false
+
     }
+
+
+
+
 
     fun getLatestPosts(page: Int) {
         _loadingState.value = true
         viewModelScope.launch {
             _latestItem.value = getPostItemLatestUseCase.invoke(page)
         }
-       // _loadingState.value = false
     }
 
     fun getTopPosts(page: Int) {
         viewModelScope.launch {
             _topItem.value = getPostItemTopUseCase.invoke(page)
         }
+    }
+
+    fun setPositionCategory(position: Int) {
+        _categoryState.value = position
     }
 }

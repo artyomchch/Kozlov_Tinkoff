@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
-import com.bumptech.glide.RequestBuilder
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
@@ -50,18 +49,27 @@ class PostFragment : Fragment() {
     ): View {
         _binding = FragmentPostBinding.inflate(inflater, container, false)
 
-        showPost()
+        showRandomPost()
         setupTabLayout()
         setupClickListenerNextButton()
         showLoadingState()
+        observeTabPosition()
+        setupClickListenerReplayButton()
 
         return binding.root
     }
 
+
+    private fun observeTabPosition() {
+        viewModel.categoryState.observe(viewLifecycleOwner) {
+            binding.tabCategories.getTabAt(it)?.select()
+        }
+    }
+
     private fun showLoadingState() {
-        viewModel.loadingState.observe(viewLifecycleOwner){
-            with(binding.progressBar){
-                visibility = when (it){
+        viewModel.loadingState.observe(viewLifecycleOwner) {
+            with(binding.progressBar) {
+                visibility = when (it) {
                     true -> View.VISIBLE
                     false -> View.INVISIBLE
                 }
@@ -70,22 +78,48 @@ class PostFragment : Fragment() {
     }
 
     private fun setupClickListenerNextButton() {
-        binding.nextButton.setOnClickListener {
-            viewModel.getRandomPost()
+        viewModel.categoryState.observe(viewLifecycleOwner) { category ->
+            binding.nextButton.setOnClickListener {
+
+                when (category) {
+                    0 -> {
+                       logicForRandomCategory()
+                    }
+
+                }
+            }
+
+        }
+    }
+
+    private fun setupClickListenerReplayButton() {
+        binding.replayButton.setOnClickListener {
+            viewModel.categoryState.observe(viewLifecycleOwner) {
+                when (it) {
+                    0 -> {
+                        viewModel.positionRandomItem--
+                        Log.d("position", "${viewModel.positionRandomItem}")
+                        showRandomPost()
+                        if (viewModel.positionRandomItem == 0) binding.replayButton.visibility = View.INVISIBLE
+                    }
+                }
+            }
         }
     }
 
 
     private fun setupTabLayout() {
-        binding.tabCategories.addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener{
-            override fun onTabSelected(tab: TabLayout.Tab?) {
 
+        binding.tabCategories.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
                 tab?.let {
-                    when (it.position){
-                        0 -> showPost()
-                        1 -> viewModel.getLatestPosts(1)
+                    viewModel.setPositionCategory(it.position)
+
+                    when (it.position) {
+                        // 0 -> showRandomPost()
+//                        1 -> showCategoryPost(viewModel.latestItem)
+//                        2 -> showCategoryPost(viewModel.topItem)
                     }
-                    Log.d("Tab", "onTabSelected: ${tab.position}")
                 }
             }
 
@@ -100,39 +134,52 @@ class PostFragment : Fragment() {
         })
     }
 
+    private fun logicForRandomCategory(){
+        with(viewModel){
+            if (positionRandomItem == finishPositionRandom) {
+                positionRandomItem++
+                Log.d("position", "$positionRandomItem")
+                getRandomPost()
+                finishPositionRandom = positionRandomItem
+            } else {
+                positionRandomItem++
+                Log.d("position", "$positionRandomItem")
+                showRandomPost()
+            }
+            if (positionRandomItem > 0) binding.replayButton.visibility = View.VISIBLE
+        }
+    }
 
-    private fun showPost() {
-        viewModel.randomItem.observe(viewLifecycleOwner) {
+
+    private fun showRandomPost() {
+        viewModel.randomItemList.observe(viewLifecycleOwner) {
             Glide.with(binding.root)
                 .asGif()
-                .listener(object: RequestListener<GifDrawable>{
+                .listener(object : RequestListener<GifDrawable> {
                     override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<GifDrawable>?, isFirstResource: Boolean): Boolean {
                         binding.progressBar.visibility = View.INVISIBLE
                         return false
                     }
 
                     override fun onResourceReady(
-                        resource: GifDrawable?, model: Any?, target: Target<GifDrawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                        resource: GifDrawable?, model: Any?, target: Target<GifDrawable>?, dataSource: DataSource?, isFirstResource: Boolean
+                    ): Boolean {
                         binding.progressBar.visibility = View.INVISIBLE
                         return false
                     }
                 })
-                .load(it.image)
+                .load(it[viewModel.positionRandomItem].image)
                 .error(R.drawable.ic_broken_image)
                 .into(binding.sourceInclude.imagePost)
-            binding.sourceInclude.description.text = it.description
+            binding.sourceInclude.description.text = it[viewModel.positionRandomItem].description
         }
     }
 
-    private fun showLatestPost() {
-        viewModel.latestItem.observe(viewLifecycleOwner) {
-
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
 
 }

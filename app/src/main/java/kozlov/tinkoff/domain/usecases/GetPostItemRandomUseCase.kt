@@ -5,5 +5,5 @@ import kozlov.tinkoff.domain.repository.PostRepository
 import javax.inject.Inject
 
 class GetPostItemRandomUseCase @Inject constructor(private val postRepository: PostRepository) {
-    suspend operator fun invoke(): PostItem = postRepository.getRandomPost()
+    suspend operator fun invoke(): List<PostItem> = postRepository.getRandomPost()
 }
